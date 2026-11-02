@@ -1,0 +1,366 @@
+[
+  {
+    "model": "quiz.question",
+    "pk": 1,
+    "fields": {
+      "role": "DevOps",
+      "text": "1. What is the main purpose of software testing?",
+      "option1": "A) To increase coding speed",
+      "option2": "B) To find defects in software",
+      "option3": "C) To design databases",
+      "option4": "D) To create hardware",
+      "correct_option": 2
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 2,
+    "fields": {
+      "role": "DevOps",
+      "text": "Which testing is performed without executing the code?",
+      "option1": "Dynamic Testing",
+      "option2": "Integration Testing",
+      "option3": "Static Testing",
+      "option4": "System Testing",
+      "correct_option": 3
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 3,
+    "fields": {
+      "role": "DevOps",
+      "text": "Which testing checks individual modules of software?",
+      "option1": "Unit Testing",
+      "option2": "System Testing",
+      "option3": "Acceptance Testing",
+      "option4": "Performance Testing",
+      "correct_option": 1
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 4,
+    "fields": {
+      "role": "DevOps",
+      "text": "Who usually performs Acceptance Testing?",
+      "option1": "Developers",
+      "option2": "Testers",
+      "option3": "End Users/Clients",
+      "option4": "Database Administrators",
+      "correct_option": 3
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 5,
+    "fields": {
+      "role": "DevOps",
+      "text": "Which testing ensures the software works under heavy load?",
+      "option1": "Functional Testing",
+      "option2": "Load Testing",
+      "option3": "Smoke Testing",
+      "option4": "Regression Testing",
+      "correct_option": 2
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 6,
+    "fields": {
+      "role": "DevOps",
+      "text": "What is Regression Testing?",
+      "option1": "Testing new hardware",
+      "option2": "Testing after fixing bugs or changes",
+      "option3": "Testing user interface only",
+      "option4": "Testing databases only",
+      "correct_option": 2
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 7,
+    "fields": {
+      "role": "DevOps",
+      "text": "Which testing verifies interactions between modules?",
+      "option1": "Unit Testing",
+      "option2": "Integration Testing",
+      "option3": "Alpha Testing",
+      "option4": "Beta Testing",
+      "correct_option": 2
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 8,
+    "fields": {
+      "role": "DevOps",
+      "text": "What is a Test Case?",
+      "option1": "A programming language",
+      "option2": "A database table",
+      "option3": "A set of inputs and expected outputs",
+      "option4": "A hardware component",
+      "correct_option": 3
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 9,
+    "fields": {
+      "role": "DevOps",
+      "text": "Which of the following is a black-box testing technique?  A) Loop Testing",
+      "option1": "Loop Testing",
+      "option2": "Statement Coverage",
+      "option3": "Equivalence Partitioning",
+      "option4": "Path Testing",
+      "correct_option": 3
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 10,
+    "fields": {
+      "role": "DevOps",
+      "text": "Smoke Testing is used to:",
+      "option1": "Test security features",
+      "option2": "Test all possible inputs",
+      "option3": "Check whether the basic functionality works",
+      "option4": "Measure software speed",
+      "correct_option": 3
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 11,
+    "fields": {
+      "role": "Python",
+      "text": "Which Python feature allows a function to remember values from its enclosing scope even after the outer function has finished execution?",
+      "option1": "Iterator",
+      "option2": "Closure",
+      "option3": "Generator",
+      "option4": "Lambda",
+      "correct_option": 2
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 12,
+    "fields": {
+      "role": "Python",
+      "text": "Which of the following data structures uses hashing internally in Python?",
+      "option1": "List",
+      "option2": "Tuple",
+      "option3": "Dictionary",
+      "option4": "String",
+      "correct_option": 3
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 13,
+    "fields": {
+      "role": "Python",
+      "text": "What is the time complexity of searching an element in a Python dictionary on average?",
+      "option1": "O(n)",
+      "option2": "O(log n)",
+      "option3": "O(1)",
+      "option4": "O(n²)",
+      "correct_option": 3
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 14,
+    "fields": {
+      "role": "Python",
+      "text": "Which keyword is used to create a generator function in Python?",
+      "option1": "return",
+      "option2": "yield",
+      "option3": "generate",
+      "option4": "lambda",
+      "correct_option": 2
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 15,
+    "fields": {
+      "role": "Python",
+      "text": "Which statement about Python's GIL (Global Interpreter Lock) is correct?",
+      "option1": "It allows multiple threads to execute Python bytecode simultaneously",
+      "option2": "It prevents multiple threads from executing Python bytecode at the same time",
+      "option3": "It increases multiprocessing speed",
+      "option4": "It is used only in Java",
+      "correct_option": 2
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 16,
+    "fields": {
+      "role": "Python",
+      "text": "Which of the following supports multiple inheritance in Python?",
+      "option1": "Classes",
+      "option2": "Functions",
+      "option3": "Modules",
+      "option4": "Packages",
+      "correct_option": 1
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 17,
+    "fields": {
+      "role": "Python",
+      "text": "What is monkey patching in Python?",
+      "option1": "Deleting variables automatically",
+      "option2": "Modifying classes or modules at runtime",
+      "option3": "Encrypting Python code",
+      "option4": "Creating private methods",
+      "correct_option": 2
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 18,
+    "fields": {
+      "role": "Python",
+      "text": "Which Python library is most commonly used for data manipulation and analysis?",
+      "option1": "NumPy",
+      "option2": "Pandas",
+      "option3": "Matplotlib",
+      "option4": "TensorFlow",
+      "correct_option": 2
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 19,
+    "fields": {
+      "role": "Data Analyst",
+      "text": "Which SQL command is used to remove duplicate rows from query results?",
+      "option1": "REMOVE",
+      "option2": "UNIQUE",
+      "option3": "DISTINCT",
+      "option4": "FILTER",
+      "correct_option": 3
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 20,
+    "fields": {
+      "role": "Data Analyst",
+      "text": "In data analysis, what does ETL stand for?",
+      "option1": "Extract, Transform, Load",
+      "option2": "Evaluate, Test, Learn",
+      "option3": "Export, Transfer, Link",
+      "option4": "Extract, Translate, Loop",
+      "correct_option": 1
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 21,
+    "fields": {
+      "role": "Data Analyst",
+      "text": "Which chart is best suited for showing the relationship between two numerical variables?",
+      "option1": "Pie Chart",
+      "option2": "Bar Graph",
+      "option3": "Scatter Plot",
+      "option4": "Histogram",
+      "correct_option": 3
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 22,
+    "fields": {
+      "role": "Data Analyst",
+      "text": "What is the primary purpose of data cleaning?",
+      "option1": "To increase file size",
+      "option2": "To remove errors and inconsistencies from data",
+      "option3": "To create duplicate records",
+      "option4": "To encrypt the dataset",
+      "correct_option": 2
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 23,
+    "fields": {
+      "role": "Python",
+      "text": "smoke q0",
+      "option1": "a",
+      "option2": "b",
+      "option3": "c",
+      "option4": "d",
+      "correct_option": 1
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 24,
+    "fields": {
+      "role": "Python",
+      "text": "smoke q1",
+      "option1": "a",
+      "option2": "b",
+      "option3": "c",
+      "option4": "d",
+      "correct_option": 1
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 25,
+    "fields": {
+      "role": "Python",
+      "text": "smoke q2",
+      "option1": "a",
+      "option2": "b",
+      "option3": "c",
+      "option4": "d",
+      "correct_option": 1
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 26,
+    "fields": {
+      "role": "Python",
+      "text": "smoke q3",
+      "option1": "a",
+      "option2": "b",
+      "option3": "c",
+      "option4": "d",
+      "correct_option": 1
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 27,
+    "fields": {
+      "role": "Python",
+      "text": "smoke q4",
+      "option1": "a",
+      "option2": "b",
+      "option3": "c",
+      "option4": "d",
+      "correct_option": 1
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 28,
+    "fields": {
+      "role": "Python",
+      "text": "smoke q5",
+      "option1": "a",
+      "option2": "b",
+      "option3": "c",
+      "option4": "d",
+      "correct_option": 1
+    }
+  }
+]
