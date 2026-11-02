@@ -45,7 +45,7 @@ SECRET_KEY = os.environ.get(
 DEBUG = env_bool('DJANGO_DEBUG', True)
 
 ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS',
-                         ['localhost', '127.0.0.1', '[::1]'])
+    ['localhost', '127.0.0.1', '[::1]', '.onrender.com'])
 
 CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
 
@@ -63,6 +63,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -121,6 +122,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+}
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
