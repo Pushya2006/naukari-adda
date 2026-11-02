@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ job.title }} - Naukari Adda{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+    <!-- ================= JOB ================= -->
+
+    <div class="col-md-7">
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-body">
+
+                <h3 class="mb-1">{{ job.title }}</h3>
+
+                <h6 class="text-muted mb-3">{{ job.company }}</h6>
+
+                <p>
+
+                    <span class="badge bg-light text-dark border">
+                        {{ job.role }}
+                    </span>
+
+                    <span class="badge bg-light text-dark border">
+                        Minimum quiz score: {{ job.min_score_required }}
+                    </span>
+
+                </p>
+
+                <h6 class="mt-4">Description</h6>
+
+                <p style="white-space: pre-line;">{{ job.description }}</p>
+
+                <h6 class="mt-4">Required skills</h6>
+
+                {% for s in job.required_skill_list %}
+
+                    <span class="badge bg-dark me-1">{{ s }}</span>
+
+                {% empty %}
+
+                    <span class="text-muted">
+                        The recruiter has not listed any required skills.
+                    </span>
+
+                {% endfor %}
+
+                <hr class="my-4">
+
+                {% if application %}
+
+                    <p class="mb-2">
+
+                        <strong>Your status:</strong>
+
+                        <span class="badge {{ application.badge_class }}">
+                            {{ application.status }}
+                        </span>
+
+                    </p>
+
+                    {% if application.status == "Eligible" %}
+
+                        <form method="POST" action="/apply/{{ job.id }}/">
+
+                            {% csrf_token %}
+
+                            <button type="submit" class="btn btn-primary">
+                                Apply for this job
+                            </button>
+
+                        </form>
+
+                    {% endif %}
+
+                    {% if application.interview_date %}
+
+                        <div class="alert alert-info mt-3 mb-0">
+
+                            <strong>Interview scheduled</strong><br>
+
+                            {{ application.interview_date }}
+                            at {{ application.interview_time }}
+
+                            {% if application.meeting_link %}
+
+                                <br>
+
+                                <a href="{{ application.meeting_link }}"
+                                   target="_blank" rel="noopener noreferrer">
+                                    Join meeting
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
+
+                {% elif user.user_type == 'student' %}
+
+                    <a href="/quiz/{{ job.id }}/" class="btn btn-warning">
+                        Take the eligibility quiz
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= AI ANALYSIS ================= -->
+
+    <div class="col-md-5">
+
+        {% if analysis %}
+
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-header d-flex justify-content-between align-items-center">
+
+                    <strong>AI Resume Analysis</strong>
+
+                    <span class="badge bg-secondary">Skill matching</span>
+
+                </div>
+
+                <div class="card-body">
+
+                    <!-- MATCH % -->
+
+                    <div class="text-center mb-3">
+
+                        <div class="display-5 fw-bold
+                            {% if analysis.match_percentage >= 70 %}text-success
+                            {% elif analysis.match_percentage >= 40 %}text-warning
+                            {% else %}text-danger{% endif %}">
+
+                            {{ analysis.match_percentage }}%
+
+                        </div>
+
+                        <div class="progress" style="height: 10px;">
+
+                            <div class="progress-bar
+                                {% if analysis.match_percentage >= 70 %}bg-success
+                                {% elif analysis.match_percentage >= 40 %}bg-warning
+                                {% else %}bg-danger{% endif %}"
+                                role="progressbar"
+                                style="width: {{ analysis.match_percentage }}%;"
+                                aria-valuenow="{{ analysis.match_percentage }}"
+                                aria-valuemin="0"
+                                aria-valuemax="100"></div>
+
+                        </div>
+
+                    </div>
+
+                    <p class="small">{{ analysis.explanation }}</p>
+
+                    <!-- MATCHED -->
+
+                    <h6 class="mt-3 mb-1 text-success">Matched skills</h6>
+
+                    {% for s in analysis.matched_skills %}
+
+                        <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle mb-1">
+                            {{ s }}
+                        </span>
+
+                    {% empty %}
+
+                        <p class="small text-muted mb-1">None yet.</p>
+
+                    {% endfor %}
+
+                    <!-- MISSING -->
+
+                    <h6 class="mt-3 mb-1 text-danger">Missing skills</h6>
+
+                    {% for s in analysis.missing_skills %}
+
+                        <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle mb-1">
+                            {{ s }}
+                        </span>
+
+                    {% empty %}
+
+                        <p class="small text-muted mb-1">
+                            Nothing missing. Great fit.
+                        </p>
+
+                    {% endfor %}
+
+                    <!-- STRENGTHS -->
+
+                    {% if analysis.strengths %}
+
+                        <h6 class="mt-3 mb-1">Strengths</h6>
+
+                        <ul class="small mb-0">
+
+                            {% for s in analysis.strengths %}
+
+                                <li>{{ s }}</li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    {% endif %}
+
+                    <!-- SUGGESTIONS -->
+
+                    {% if analysis.suggestions %}
+
+                        <h6 class="mt-3 mb-1">How to improve</h6>
+
+                        <ul class="small mb-0">
+
+                            {% for s in analysis.suggestions %}
+
+                                <li>{{ s }}</li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    {% endif %}
+
+                    <!-- DETECTED -->
+
+                    {% if analysis.detected_skills %}
+
+                        <h6 class="mt-3 mb-1">Skills detected in your resume</h6>
+
+                        <p class="small text-muted mb-0">
+                            {{ analysis.detected_skills|join:", " }}
+                        </p>
+
+                    {% endif %}
+
+                    <div class="mt-3">
+
+                        <a href="/jobs/{{ job.id }}/?refresh=1"
+                           class="btn btn-sm btn-outline-secondary">
+                            Re-run analysis
+                        </a>
+
+                        <a href="/upload-resume/"
+                           class="btn btn-sm btn-outline-primary">
+                            Update resume
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+<a href="/jobs/" class="btn btn-dark">Back to jobs</a>
+
+{% endblock %}

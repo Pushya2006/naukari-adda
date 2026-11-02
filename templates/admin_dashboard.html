@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Naukari Adda{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Admin Dashboard</h2>
+
+<div class="row mb-4 g-3">
+
+    <div class="col-md-3 col-6">
+
+        <div class="card shadow-sm text-center">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">Users</h6>
+
+                <h2 class="mb-0">{{ total_users }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-3 col-6">
+
+        <div class="card shadow-sm text-center">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">Students</h6>
+
+                <h2 class="mb-0">{{ total_students }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-3 col-6">
+
+        <div class="card shadow-sm text-center">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">Recruiters</h6>
+
+                <h2 class="mb-0">{{ total_recruiters }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-3 col-6">
+
+        <div class="card shadow-sm text-center">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">Jobs</h6>
+
+                <h2 class="mb-0">{{ total_jobs }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <h5 class="mb-3">Management</h5>
+
+        <p class="text-muted">
+
+            {{ total_applications }} application{{ total_applications|pluralize }}
+            across all jobs.
+
+        </p>
+
+        <a href="/admin/" class="btn btn-dark">Go to Admin Panel</a>
+
+        <a href="/admin/quiz/question/" class="btn btn-outline-dark">
+            Manage quiz questions
+        </a>
+
+        <a href="/admin/jobs/job/" class="btn btn-outline-dark">
+            Manage jobs
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

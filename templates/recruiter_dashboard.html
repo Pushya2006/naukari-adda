@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block title %}Recruiter Dashboard - Naukari Adda{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Recruiter Dashboard</h2>
+
+<!-- ANALYTICS -->
+
+<div class="row mb-4 g-3">
+
+    <div class="col-md-2 col-6">
+
+        <div class="card shadow-sm text-center h-100">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">Total Jobs</h6>
+
+                <h2 class="mb-0">{{ total_jobs }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-2 col-6">
+
+        <div class="card shadow-sm text-center h-100">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">Applicants</h6>
+
+                <h2 class="mb-0">{{ total_applications }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-2 col-6">
+
+        <div class="card shadow-sm text-center h-100">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">Shortlisted</h6>
+
+                <h2 class="mb-0 text-primary">{{ shortlisted_count }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-2 col-6">
+
+        <div class="card shadow-sm text-center h-100">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">Interviews</h6>
+
+                <h2 class="mb-0 text-info">{{ interview_count }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-2 col-6">
+
+        <div class="card shadow-sm text-center h-100">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">Selected</h6>
+
+                <h2 class="mb-0 text-success">{{ selected_count }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-2 col-6">
+
+        <div class="card shadow-sm text-center h-100">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">Rejected</h6>
+
+                <h2 class="mb-0 text-danger">{{ rejected_count }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="row">
+
+    <!-- ACTIONS + NOTIFICATIONS -->
+
+    <div class="col-md-4">
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-body text-center">
+
+                <h5 class="mb-3">Post New Job</h5>
+
+                <a href="/post-job/" class="btn btn-primary w-100">
+                    Post Job
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-body">
+
+                <h6 class="mb-3">
+
+                    Notifications
+
+                    {% if unread_count %}
+
+                        <span class="badge bg-danger">{{ unread_count }}</span>
+
+                    {% endif %}
+
+                </h6>
+
+                {% for note in notifications %}
+
+                    <div class="alert {% if note.is_read %}alert-light border{% else %}alert-info{% endif %} py-2 mb-2 small">
+
+                        {{ note.message }}
+
+                        <br>
+
+                        <small class="text-muted">{{ note.created_at }}</small>
+
+                    </div>
+
+                {% empty %}
+
+                    <p class="small text-muted mb-0">No notifications yet.</p>
+
+                {% endfor %}
+
+                {% if unread_count %}
+
+                    <form method="POST" action="/notifications/read/">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-secondary w-100">
+                            Mark all read
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- JOBS -->
+
+    <div class="col-md-8">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <h5 class="mb-0">Posted Jobs</h5>
+
+                    <a href="/recruiter/jobs/"
+                       class="btn btn-sm btn-outline-dark">
+                        Manage all
+                    </a>
+
+                </div>
+
+                {% for job in jobs %}
+
+                    <div class="border rounded p-3 mb-3">
+
+                        <h6 class="mb-1">{{ job.title }}</h6>
+
+                        <p class="text-muted small mb-1">
+                            {{ job.company }} &middot; {{ job.role }}
+                        </p>
+
+                        <p class="small mb-2">
+                            {{ job.description|truncatewords:20 }}
+                        </p>
+
+                        <a href="/recruiter/jobs/{{ job.id }}/"
+                           class="btn btn-dark btn-sm">
+                            View Applicants
+                        </a>
+
+                    </div>
+
+                {% empty %}
+
+                    <p class="text-muted mb-0">No jobs posted yet.</p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

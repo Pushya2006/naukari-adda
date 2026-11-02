@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-6">
+
+        <div class="card shadow p-4">
+
+            <h2 class="mb-4">
+
+                Schedule Interview
+
+            </h2>
+
+            <h5>
+
+                Candidate:
+                {{ application.student.username }}
+
+            </h5>
+
+            <h6 class="mb-4">
+
+                Job:
+                {{ application.job.title }}
+
+            </h6>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Interview Date
+
+                    </label>
+
+                    <input
+                        type="date"
+                        name="date"
+                        class="form-control"
+                        required
+                    >
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Interview Time
+
+                    </label>
+
+                    <input
+                        type="time"
+                        name="time"
+                        class="form-control"
+                        required
+                    >
+
+                </div>
+
+                <div class="mb-4">
+
+                    <label class="form-label">
+
+                        Meeting Link
+
+                    </label>
+
+                    <input
+                        type="url"
+                        name="meeting_link"
+                        class="form-control"
+                        placeholder="https://meet.google.com/..."
+                        required
+                    >
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-dark w-100">
+
+                    Schedule Interview
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

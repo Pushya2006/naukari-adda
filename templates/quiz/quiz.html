@@ -1,0 +1,784 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz - {{ job.title }}{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <!-- ================= QUIZ ================= -->
+
+    <div class="col-md-8">
+
+        <div class="card shadow-lg">
+
+            <div class="card-body p-4 p-md-5">
+
+                <!-- HEADER -->
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+
+                    <h5 class="mb-0">
+                        Question {{ current }} of {{ total }}
+                    </h5>
+
+                    <h5 class="text-danger mb-0">
+                        <span id="timer">{{ seconds }}</span>s
+                    </h5>
+
+                </div>
+
+                <p class="text-muted small mb-3">
+                    {{ job.title }} &middot; {{ job.company }}
+                </p>
+
+                <!-- PROGRESS BAR -->
+
+                <div class="progress mb-4" style="height: 8px;">
+
+                    <div class="progress-bar bg-dark"
+                         role="progressbar"
+                         style="width: {% widthratio current total 100 %}%;"
+                         aria-valuenow="{{ current }}"
+                         aria-valuemin="0"
+                         aria-valuemax="{{ total }}"></div>
+
+                </div>
+
+                <!-- QUESTION -->
+
+                <h4 class="mb-4">{{ question.text }}</h4>
+
+                <!-- FORM -->
+
+                <form method="POST" id="quizForm">
+
+                    {% csrf_token %}
+
+                    <input type="hidden"
+                           name="question_id"
+                           value="{{ question.id }}">
+
+                    <div class="form-check mb-3">
+
+                        <input class="form-check-input"
+                               type="radio"
+                               name="answer"
+                               id="opt1"
+                               value="1">
+
+                        <label class="form-check-label" for="opt1">
+                            {{ question.option1 }}
+                        </label>
+
+                    </div>
+
+                    <div class="form-check mb-3">
+
+                        <input class="form-check-input"
+                               type="radio"
+                               name="answer"
+                               id="opt2"
+                               value="2">
+
+                        <label class="form-check-label" for="opt2">
+                            {{ question.option2 }}
+                        </label>
+
+                    </div>
+
+                    <div class="form-check mb-3">
+
+                        <input class="form-check-input"
+                               type="radio"
+                               name="answer"
+                               id="opt3"
+                               value="3">
+
+                        <label class="form-check-label" for="opt3">
+                            {{ question.option3 }}
+                        </label>
+
+                    </div>
+
+                    <div class="form-check mb-4">
+
+                        <input class="form-check-input"
+                               type="radio"
+                               name="answer"
+                               id="opt4"
+                               value="4">
+
+                        <label class="form-check-label" for="opt4">
+                            {{ question.option4 }}
+                        </label>
+
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-dark w-100"
+                            id="nextBtn">
+
+                        {% if current == total %}
+                            Finish Quiz
+                        {% else %}
+                            Next Question
+                        {% endif %}
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= WEBCAM MONITOR ================= -->
+
+    <div class="col-md-4 mt-4 mt-md-0">
+
+        <div class="card shadow-sm">
+
+            <div class="card-header d-flex justify-content-between align-items-center">
+
+                <strong>Camera monitoring</strong>
+
+                <span id="camBadge" class="badge bg-secondary">
+                    Starting...
+                </span>
+
+            </div>
+
+            <div class="card-body">
+
+                <!-- Small, fixed-width preview so it never crowds the quiz -->
+
+                <div style="max-width: 220px; margin: 0 auto;">
+
+                    <video id="camPreview"
+                           autoplay
+                           playsinline
+                           muted
+                           class="w-100 rounded border bg-dark"
+                           style="aspect-ratio: 4 / 3; object-fit: cover;"></video>
+
+                </div>
+
+                <div id="camMessage"
+                     class="alert alert-secondary small mt-3 mb-0">
+                    Requesting camera permission...
+                </div>
+
+                <!-- FACE DETECTION STATUS -->
+
+                <div id="faceRow" class="text-center mt-3 d-none">
+
+                    <span id="faceStatus" class="badge bg-secondary">
+                        Loading face detection...
+                    </span>
+
+                </div>
+
+                <!-- VOICE ACTIVITY STATUS -->
+
+                <div id="voiceRow" class="text-center mt-2 d-none">
+
+                    <span id="voiceStatus" class="badge bg-secondary">
+                        Requesting microphone...
+                    </span>
+
+                </div>
+
+                <!-- WARNING COUNTERS (persist for the whole quiz) -->
+
+                <div class="d-flex flex-wrap justify-content-center gap-1 mt-3">
+
+                    <span id="tabWarnBadge" class="badge bg-secondary">
+                        Tab switches: {{ tab_switch_count }}/{{ tab_switch_limit }}
+                    </span>
+
+                    <span id="faceWarnBadge" class="badge bg-secondary">
+                        Face warnings: {{ face_warning_count }}/{{ face_warning_limit }}
+                    </span>
+
+                    <span id="voiceWarnBadge" class="badge bg-secondary">
+                        Voice warnings: {{ voice_warning_count }}/{{ voice_warning_limit }}
+                    </span>
+
+                </div>
+
+                <p class="text-muted small mt-3 mb-0">
+                    Your camera and microphone stay on only while the quiz is
+                    running and stop automatically when you finish or leave.
+                    Face detection runs entirely in your browser using
+                    MediaPipe, and voice activity is measured locally too -
+                    no image, video frame or audio is ever recorded, stored
+                    or uploaded. Repeated warnings will automatically submit
+                    the quiz.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_scripts %}
+
+<script>
+(function () {
+    "use strict";
+
+    // ------------------------------------------------------------------
+    // Per-question countdown timer (unchanged behaviour: auto-submit at 0)
+    // ------------------------------------------------------------------
+    var timeLeft    = {{ seconds }};
+    var timerEl     = document.getElementById("timer");
+    var quizForm    = document.getElementById("quizForm");
+    var nextBtn     = document.getElementById("nextBtn");
+    var submitted   = false;   // true once the quiz is being submitted/left
+    var terminated  = false;   // true once a proctoring limit ended the quiz
+
+    function submitQuiz() {
+        if (submitted) { return; }
+        submitted = true;
+        stopCamera();
+        stopVoiceMonitoring();
+        if (nextBtn) { nextBtn.disabled = true; }
+        quizForm.submit();
+    }
+
+    var countdown = setInterval(function () {
+        timeLeft -= 1;
+        if (timerEl) { timerEl.innerText = timeLeft > 0 ? timeLeft : 0; }
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            submitQuiz();
+        }
+    }, 1000);
+
+    // Stop the camera/mic on a normal submit too.
+    quizForm.addEventListener("submit", function () {
+        submitted = true;
+        clearInterval(countdown);
+        stopCamera();
+        stopVoiceMonitoring();
+    });
+
+
+    // ------------------------------------------------------------------
+    // Violation reporting (face / voice / tab-switch)
+    //
+    // Because each question is its own full page load, warning counts
+    // cannot live in a JS variable - they live server-side in the
+    // session (see quiz/views.py: record_violation). Every time this
+    // page detects a violation it reports it immediately via fetch();
+    // the server increments the count for the whole quiz and, once a
+    // limit is hit, finalizes the attempt and tells us where to go.
+    // ------------------------------------------------------------------
+    var VIOLATION_URL = "{% url 'quiz_violation' %}";
+    var QUIZ_URL       = "{% url 'quiz' %}";
+
+    var tabWarnBadge   = document.getElementById("tabWarnBadge");
+    var faceWarnBadge  = document.getElementById("faceWarnBadge");
+    var voiceWarnBadge = document.getElementById("voiceWarnBadge");
+
+    function updateWarningBadge(el, label, data) {
+        if (!el) { return; }
+        el.innerText = label + ": " + data.count + "/" + data.limit;
+        el.className = "badge " + (data.count > 0 ? "bg-warning text-dark" : "bg-secondary");
+    }
+
+    function terminateQuiz(redirectUrl) {
+        if (terminated) { return; }
+        terminated = true;
+        submitted = true;
+        clearInterval(countdown);
+        stopCamera();
+        stopVoiceMonitoring();
+        if (nextBtn) { nextBtn.disabled = true; }
+        var inputs = quizForm.querySelectorAll("input, button");
+        for (var i = 0; i < inputs.length; i++) { inputs[i].disabled = true; }
+        setStatus("Terminated", "bg-danger",
+            "The quiz was automatically submitted after repeated " +
+            "monitoring warnings.", "alert-danger");
+        window.location.href = redirectUrl || QUIZ_URL;
+    }
+
+    function reportViolation(kind) {
+        if (submitted || terminated) { return; }
+
+        var tokenInput = quizForm.querySelector("[name=csrfmiddlewaretoken]");
+        var token = tokenInput ? tokenInput.value : "";
+
+        fetch(VIOLATION_URL, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-CSRFToken": token,
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "type=" + encodeURIComponent(kind)
+        })
+        .then(function (resp) { return resp.json(); })
+        .then(function (data) {
+            if (!data || data.error) { return; }
+
+            if (data.type === "tab") {
+                updateWarningBadge(tabWarnBadge, "Tab switches", data);
+            } else if (data.type === "face") {
+                updateWarningBadge(faceWarnBadge, "Face warnings", data);
+            } else if (data.type === "voice") {
+                updateWarningBadge(voiceWarnBadge, "Voice warnings", data);
+            }
+
+            if (data.terminated) {
+                terminateQuiz(data.redirect_url);
+            }
+        })
+        .catch(function (err) {
+            // A network hiccup while reporting a violation must not crash
+            // the quiz - it simply won't be counted this time.
+            console.warn("Could not report " + kind + " violation:", err);
+        });
+    }
+
+
+    // ------------------------------------------------------------------
+    // Webcam + real-time face detection
+    //
+    // The camera preview uses plain getUserMedia, unchanged in spirit from
+    // before. Face detection uses Google's MediaPipe Face Detector
+    // (@mediapipe/tasks-vision), loaded on demand via a dynamic import()
+    // from jsDelivr, with its pretrained model fetched from Google's model
+    // CDN. Both are fetched directly by the browser at runtime - nothing
+    // is bundled into this repo and no camera frame is ever sent
+    // anywhere; detection runs locally via WebAssembly/WebGL inside the
+    // page. If the CDN can't be reached (offline, blocked network), the
+    // dynamic import simply rejects and is caught below - the camera
+    // preview, timer and quiz keep working exactly as before, just
+    // without the live face count.
+    // ------------------------------------------------------------------
+    var TASKS_VISION_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+    var WASM_BASE_URL     = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
+    var MODEL_URL =
+        "https://storage.googleapis.com/mediapipe-models/face_detector/" +
+        "blaze_face_short_range/float16/1/blaze_face_short_range.tflite";
+
+    var video      = document.getElementById("camPreview");
+    var badge      = document.getElementById("camBadge");
+    var messageBox = document.getElementById("camMessage");
+    var faceRow    = document.getElementById("faceRow");
+    var faceStatus = document.getElementById("faceStatus");
+
+    var stream           = null;
+    var detector          = null;
+    var detectionRunning  = false;
+    var rafHandle         = null;
+
+    function setStatus(text, badgeClass, messageText, messageClass) {
+        if (badge) {
+            badge.className = "badge " + badgeClass;
+            badge.innerText = text;
+        }
+        if (messageBox && messageText) {
+            messageBox.className = "alert small mt-3 mb-0 " + messageClass;
+            messageBox.innerText = messageText;
+        }
+    }
+
+    function setFaceStatus(text, badgeClass) {
+        if (!faceStatus) { return; }
+        faceStatus.className = "badge " + badgeClass;
+        faceStatus.innerText = text;
+    }
+
+    function stopCamera() {
+        detectionRunning = false;
+
+        if (rafHandle !== null) {
+            cancelAnimationFrame(rafHandle);
+            rafHandle = null;
+        }
+
+        if (detector && typeof detector.close === "function") {
+            try { detector.close(); } catch (e) { /* ignore */ }
+        }
+        detector = null;
+
+        if (stream) {
+            stream.getTracks().forEach(function (track) {
+                track.stop();
+            });
+            stream = null;
+        }
+
+        if (video) { video.srcObject = null; }
+    }
+
+    // ---- Load MediaPipe Face Detector (WASM, runs locally) ----------------
+
+    function createDetectorWithDelegate(FaceDetector, vision, delegate) {
+        return FaceDetector.createFromOptions(vision, {
+            baseOptions: {
+                modelAssetPath: MODEL_URL,
+                delegate: delegate
+            },
+            runningMode: "VIDEO"
+        });
+    }
+
+    function loadFaceDetector() {
+        return import(/* webpackIgnore: true */ TASKS_VISION_URL)
+            .then(function (tasksVision) {
+                return tasksVision.FilesetResolver.forVisionTasks(WASM_BASE_URL)
+                    .then(function (vision) {
+                        // Prefer GPU acceleration; fall back to CPU if the
+                        // device/browser can't create a GPU delegate.
+                        return createDetectorWithDelegate(
+                            tasksVision.FaceDetector, vision, "GPU"
+                        ).catch(function () {
+                            return createDetectorWithDelegate(
+                                tasksVision.FaceDetector, vision, "CPU"
+                            );
+                        });
+                    });
+            })
+            .then(function (createdDetector) {
+                detector = createdDetector;
+                return true;
+            })
+            .catch(function (error) {
+                console.warn("Face detection unavailable:", error);
+                detector = null;
+                return false;
+            });
+    }
+
+    // ---- Detection loop -----------------------------------------------
+    //
+    // A single blinked-away or motion-blurred frame should not cost a
+    // warning, so a bad state (no face / multiple faces) must persist for
+    // FACE_SUSTAIN_MS before it is reported, and reports are then spaced
+    // at least FACE_COOLDOWN_MS apart so continuously having no face in
+    // frame counts as one ongoing warning rather than dozens per second.
+    //
+    // detectForVideo() requires a strictly increasing timestamp on every
+    // call; some browsers can hand requestAnimationFrame two frames with
+    // an identical (or even slightly out-of-order) performance.now()
+    // value under load, which makes MediaPipe throw on that call. If that
+    // exception were silently swallowed indefinitely, the on-screen
+    // status would freeze at whatever it last showed - which would look
+    // exactly like "camera is fine" even while the candidate is out of
+    // frame. lastDetectTimestamp guarantees a strictly increasing value
+    // regardless of clock resolution, and a run of consecutive detection
+    // errors is itself treated as a bad ("no face") state so the UI never
+    // gets stuck silently reporting stale good news.
+    var FACE_SUSTAIN_MS  = 2000;
+    var FACE_COOLDOWN_MS = 4000;
+    var faceBadSince      = null;
+    var lastFaceWarningAt = 0;
+    var lastDetectTimestamp = 0;
+    var consecutiveDetectErrors = 0;
+
+    function markFaceBad(label, badgeClass) {
+        setFaceStatus(label, badgeClass);
+
+        var now = Date.now();
+        if (faceBadSince === null) { faceBadSince = now; }
+
+        var sustained = (now - faceBadSince) >= FACE_SUSTAIN_MS;
+        var cooled = (now - lastFaceWarningAt) >= FACE_COOLDOWN_MS;
+
+        if (sustained && cooled) {
+            lastFaceWarningAt = now;
+            reportViolation("face");
+        }
+    }
+
+    function detectLoop() {
+        if (!detectionRunning) { return; }
+
+        if (detector && stream && video.videoWidth) {
+            try {
+                var ts = performance.now();
+                if (ts <= lastDetectTimestamp) {
+                    ts = lastDetectTimestamp + 1;
+                }
+                lastDetectTimestamp = ts;
+
+                var result = detector.detectForVideo(video, ts);
+                consecutiveDetectErrors = 0;
+
+                var count = (result && result.detections) ?
+                    result.detections.length : 0;
+
+                if (count === 1) {
+                    setFaceStatus("Face detected", "bg-success");
+                    faceBadSince = null;
+                } else if (count === 0) {
+                    markFaceBad("No face detected", "bg-warning text-dark");
+                } else {
+                    markFaceBad("Multiple faces detected", "bg-danger");
+                }
+            } catch (e) {
+                // A single bad frame should not raise a warning, but a
+                // sustained run of them must not be mistaken for "all
+                // clear" either - treat it the same as no-face-detected.
+                consecutiveDetectErrors += 1;
+                if (consecutiveDetectErrors > 3) {
+                    markFaceBad("No face detected", "bg-warning text-dark");
+                }
+            }
+        }
+
+        rafHandle = requestAnimationFrame(detectLoop);
+    }
+
+    // ---- Camera start / permission handling ----------------------------
+
+    function startCamera() {
+
+        if (!navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia) {
+
+            setStatus("Unsupported", "bg-danger",
+                "This browser does not support camera access. Use a recent " +
+                "Chrome, Edge, Firefox or Safari over http://localhost or " +
+                "an https:// address.",
+                "alert-danger");
+            return;
+        }
+
+        navigator.mediaDevices.getUserMedia({
+                video: { width: 320, height: 240 }
+            })
+            .then(function (mediaStream) {
+
+                stream = mediaStream;
+                video.srcObject = mediaStream;
+
+                var play = video.play();
+                if (play && typeof play.catch === "function") {
+                    play.catch(function () { /* autoplay guard */ });
+                }
+
+                setStatus("Active", "bg-success",
+                    "Camera is active for the duration of this quiz.",
+                    "alert-success");
+
+                if (faceRow) { faceRow.classList.remove("d-none"); }
+                setFaceStatus("Loading face detection...", "bg-secondary");
+
+                detectionRunning = true;
+                rafHandle = requestAnimationFrame(detectLoop);
+
+                loadFaceDetector().then(function (ok) {
+                    if (!ok && detectionRunning) {
+                        setFaceStatus("Face detection unavailable",
+                            "bg-secondary");
+                    }
+                });
+            })
+            .catch(function (error) {
+
+                var name = error && error.name ? error.name : "";
+                var text;
+
+                if (name === "NotAllowedError" ||
+                    name === "PermissionDeniedError") {
+                    text = "Camera permission required. Click the camera " +
+                           "icon in your browser's address bar, allow " +
+                           "access, then reload this page. You can still " +
+                           "take the quiz without it.";
+                    setStatus("Permission Required", "bg-danger", text,
+                        "alert-danger");
+                    return;
+                }
+
+                if (name === "NotFoundError" ||
+                    name === "DevicesNotFoundError") {
+                    text = "No camera was found on this device. You can " +
+                           "still take the quiz without it.";
+                } else if (name === "NotReadableError") {
+                    text = "Your camera is already in use by another " +
+                           "application. Close it and reload this page.";
+                } else {
+                    text = "The camera could not be started" +
+                           (name ? " (" + name + ")" : "") +
+                           ". You can still take the quiz without it.";
+                }
+
+                setStatus("Unavailable", "bg-danger", text, "alert-danger");
+            });
+    }
+
+    // ------------------------------------------------------------------
+    // Voice activity detection
+    //
+    // Uses the Web Audio API's AnalyserNode to measure the microphone's
+    // volume locally in the browser - no audio is recorded, saved, or
+    // sent anywhere; only a single loudness number ever leaves the
+    // analyser, and even that number never leaves this page. Like face
+    // detection above, a burst of loudness must be sustained for
+    // VOICE_SUSTAIN_MS before it counts, and reports are spaced at least
+    // VOICE_COOLDOWN_MS apart so continuous talking is one warning, not
+    // many. A denied/unavailable microphone degrades quietly and never
+    // stops the quiz.
+    // ------------------------------------------------------------------
+    var VOICE_THRESHOLD   = 0.06;   // RMS level considered "activity"
+    var VOICE_SUSTAIN_MS  = 1200;
+    var VOICE_COOLDOWN_MS = 4000;
+
+    var voiceStatus  = document.getElementById("voiceStatus");
+    var voiceRow     = document.getElementById("voiceRow");
+
+    var audioContext        = null;
+    var audioStream          = null;
+    var analyser              = null;
+    var voiceMonitorHandle    = null;
+    var voiceMonitoringActive = false;
+    var voiceAboveSince       = null;
+    var lastVoiceWarningAt    = 0;
+
+    function setVoiceStatus(text, badgeClass) {
+        if (!voiceStatus) { return; }
+        voiceStatus.className = "badge " + badgeClass;
+        voiceStatus.innerText = text;
+    }
+
+    function stopVoiceMonitoring() {
+        voiceMonitoringActive = false;
+
+        if (voiceMonitorHandle !== null) {
+            cancelAnimationFrame(voiceMonitorHandle);
+            voiceMonitorHandle = null;
+        }
+
+        if (audioStream) {
+            audioStream.getTracks().forEach(function (track) {
+                track.stop();
+            });
+            audioStream = null;
+        }
+
+        if (audioContext && audioContext.state !== "closed") {
+            try { audioContext.close(); } catch (e) { /* ignore */ }
+        }
+        audioContext = null;
+        analyser = null;
+    }
+
+    function voiceMonitoringLoop() {
+        if (!voiceMonitoringActive) { return; }
+
+        if (analyser) {
+            var data = new Uint8Array(analyser.fftSize);
+            analyser.getByteTimeDomainData(data);
+
+            var sumSquares = 0;
+            for (var i = 0; i < data.length; i++) {
+                var sample = (data[i] - 128) / 128;
+                sumSquares += sample * sample;
+            }
+            var rms = Math.sqrt(sumSquares / data.length);
+            var now = Date.now();
+
+            if (rms > VOICE_THRESHOLD) {
+                if (voiceAboveSince === null) { voiceAboveSince = now; }
+
+                var sustained = (now - voiceAboveSince) >= VOICE_SUSTAIN_MS;
+                var cooled = (now - lastVoiceWarningAt) >= VOICE_COOLDOWN_MS;
+
+                if (sustained && cooled) {
+                    lastVoiceWarningAt = now;
+                    reportViolation("voice");
+                }
+            } else {
+                voiceAboveSince = null;
+            }
+        }
+
+        voiceMonitorHandle = requestAnimationFrame(voiceMonitoringLoop);
+    }
+
+    function startVoiceMonitoring() {
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setVoiceStatus("Unsupported", "bg-secondary");
+            return;
+        }
+
+        if (voiceRow) { voiceRow.classList.remove("d-none"); }
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(function (mediaStream) {
+
+                audioStream = mediaStream;
+
+                var AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) {
+                    setVoiceStatus("Unsupported", "bg-secondary");
+                    return;
+                }
+
+                audioContext = new AudioCtx();
+                var source = audioContext.createMediaStreamSource(mediaStream);
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 512;
+                source.connect(analyser);
+
+                setVoiceStatus("Listening", "bg-success");
+
+                voiceMonitoringActive = true;
+                voiceMonitorHandle = requestAnimationFrame(voiceMonitoringLoop);
+            })
+            .catch(function (error) {
+                // Microphone permission failure must not crash the quiz -
+                // just report it and continue without voice monitoring.
+                console.warn("Microphone unavailable:", error);
+                setVoiceStatus("Microphone permission required", "bg-secondary");
+            });
+    }
+
+
+    // Release the camera/mic and stop detection if the page is closed or
+    // navigated away from.
+    window.addEventListener("pagehide", function () {
+        stopCamera();
+        stopVoiceMonitoring();
+    });
+    window.addEventListener("beforeunload", function () {
+        stopCamera();
+        stopVoiceMonitoring();
+    });
+
+    startCamera();
+    startVoiceMonitoring();
+
+
+    // ------------------------------------------------------------------
+    // Tab-switch detection
+    //
+    // Reported to the server immediately so the count survives the next
+    // full-page reload; the badge is updated from the server's response
+    // once it arrives.
+    // ------------------------------------------------------------------
+    document.addEventListener("visibilitychange", function () {
+        if (document.hidden && !submitted && !terminated) {
+            reportViolation("tab");
+        }
+    });
+
+}());
+</script>
+
+{% endblock %}

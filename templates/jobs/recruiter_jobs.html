@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}My Jobs - Naukari Adda{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h2 class="mb-0">My Posted Jobs</h2>
+
+    <a href="/post-job/" class="btn btn-primary">Post a new job</a>
+
+</div>
+
+<div class="row">
+
+    {% for job in jobs %}
+
+        <div class="col-md-6 mb-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body d-flex flex-column">
+
+                    <h4 class="card-title mb-1">{{ job.title }}</h4>
+
+                    <h6 class="text-muted">{{ job.company }}</h6>
+
+                    <p class="mt-2 mb-2">
+                        {{ job.description|truncatewords:25 }}
+                    </p>
+
+                    <p class="mb-2">
+
+                        <span class="badge bg-light text-dark border">
+                            {{ job.role }}
+                        </span>
+
+                        <span class="badge bg-light text-dark border">
+                            Min score: {{ job.min_score_required }}
+                        </span>
+
+                        <span class="badge bg-dark">
+                            {{ job.applicant_count }} applicant{{ job.applicant_count|pluralize }}
+                        </span>
+
+                    </p>
+
+                    <div class="mb-2 small">
+
+                        <strong>Required skills:</strong>
+
+                        {% for s in job.required_skill_list %}
+
+                            <span class="badge bg-secondary">{{ s }}</span>
+
+                        {% empty %}
+
+                            <span class="text-danger">
+                                none listed - AI match will show 0%
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="mt-auto">
+
+                        <a href="/recruiter/jobs/{{ job.id }}/"
+                           class="btn btn-dark btn-sm">
+                            View Applicants
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% empty %}
+
+        <div class="col-12">
+
+            <div class="alert alert-info">
+
+                You have not posted any jobs yet.
+
+                <a href="/post-job/" class="alert-link">Post your first job</a>.
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

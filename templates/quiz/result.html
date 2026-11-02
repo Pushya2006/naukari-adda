@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz Result - Naukari Adda{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-7">
+
+        <div class="card shadow-lg text-center">
+
+            <div class="card-body p-5">
+
+                <h2 class="mb-1">Quiz Result</h2>
+
+                {% if job %}
+
+                    <p class="text-muted mb-4">
+                        {{ job.title }} &middot; {{ job.company }}
+                    </p>
+
+                {% endif %}
+
+                {% if no_questions %}
+
+                    <div class="alert alert-warning">
+
+                        No quiz questions have been added for this role yet.
+                        Please contact the administrator.
+
+                    </div>
+
+                {% else %}
+
+                    {% if already_attempted %}
+
+                        <div class="alert alert-info">
+
+                            You have already attempted this quiz.
+                            Only one attempt per job is allowed.
+
+                        </div>
+
+                    {% endif %}
+
+                    <h1 class="display-4 mb-2">
+                        {{ score }}/{{ total }}
+                    </h1>
+
+                    {% if min_score_required %}
+
+                        <p class="text-muted mb-4">
+                            Minimum required: {{ min_score_required }}
+                        </p>
+
+                    {% endif %}
+
+                    {% if status == "Eligible" %}
+
+                        <div class="alert alert-success">
+
+                            Congratulations! You are eligible to apply.
+
+                        </div>
+
+                        {% if job %}
+
+                            <form method="POST" action="/apply/{{ job.id }}/">
+
+                                {% csrf_token %}
+
+                                <button type="submit" class="btn btn-primary">
+                                    Apply now
+                                </button>
+
+                            </form>
+
+                        {% endif %}
+
+                    {% elif status == "Not Eligible" %}
+
+                        <div class="alert alert-danger">
+
+                            You did not reach the minimum score for this role.
+
+                        </div>
+
+                    {% elif status %}
+
+                        <div class="alert alert-secondary">
+
+                            Current status: {{ status }}
+
+                        </div>
+
+                    {% endif %}
+
+                {% endif %}
+
+                <a href="/jobs/" class="btn btn-dark mt-3">
+                    Back to Jobs
+                </a>
+
+                <a href="/dashboard/" class="btn btn-outline-dark mt-3">
+                    Dashboard
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

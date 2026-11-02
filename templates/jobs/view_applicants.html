@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+
+{% block title %}Applicants - {{ job.title }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selectAll = document.getElementById('selectAllApplicants');
+    if (!selectAll) return;
+    const boxes = Array.from(document.querySelectorAll(
+        'input[name="application_ids"][form="bulkEmailForm"]'
+    ));
+    selectAll.addEventListener('change', function () {
+        boxes.forEach(function (box) { box.checked = selectAll.checked; });
+    });
+    boxes.forEach(function (box) {
+        box.addEventListener('change', function () {
+            selectAll.checked = boxes.length > 0 &&
+                boxes.every(function (item) { return item.checked; });
+        });
+    });
+});
+</script>
+\n{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+
+    <h2 class="mb-0">Applicants for {{ job.title }}</h2>
+
+    <a href="/recruiter/jobs/" class="btn btn-outline-dark btn-sm">
+        Back to my jobs
+    </a>
+
+</div>
+
+<p class="text-muted">
+
+    {{ job.company }} &middot; {{ job.role }} &middot;
+    Required skills:
+
+    {% for s in job.required_skill_list %}
+
+        <span class="badge bg-dark">{{ s }}</span>
+
+    {% empty %}
+
+        <span class="text-danger">
+            none listed - add skills to this job so AI matching can work
+        </span>
+
+    {% endfor %}
+
+</p>
+
+{% if applications %}
+
+    <!-- ================= BULK EMAIL ================= -->
+    <!-- Checkboxes below live inside each applicant card, but use the
+         HTML5 form="bulkEmailForm" attribute to submit into this form -
+         this avoids nesting a <form> inside each card's own action forms,
+         which the per-card Select/Reject/Update forms already use. -->
+
+    <form id="bulkEmailForm" method="POST"
+          action="{% url 'email_selected_applicants' job.id %}"
+          class="card shadow-sm mb-4">
+
+        {% csrf_token %}
+
+        <div class="card-body">
+
+            <h6 class="mb-2">Email selected candidates</h6>
+
+            <div class="row g-2">
+
+                <div class="col-md-3">
+                    <input type="text" name="subject" maxlength="200"
+                           class="form-control form-control-sm"
+                           placeholder="Subject" required>
+                </div>
+
+                <div class="col-md-7">
+                    <textarea name="body" maxlength="5000" rows="3"
+                              class="form-control form-control-sm"
+                              placeholder="Message. Use {name} to insert each student's name."
+                              required></textarea>
+                </div>
+
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-dark btn-sm">
+                        Send Email to Selected
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="d-flex align-items-center gap-2 mt-2">
+                <input class="form-check-input" type="checkbox"
+                       id="selectAllApplicants">
+                <label class="form-check-label small"
+                       for="selectAllApplicants">Select all candidates</label>
+            </div>
+            <div class="form-text">
+                Each candidate receives a separate email. Use {name} in your
+                message to personalize it. Candidates without a valid email
+                address will be reported after sending.
+            </div>
+
+        </div>
+
+    </form>
+
+{% endif %}
+
+{% for app in applications %}
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row align-items-start">
+
+                <!-- ============ STUDENT ============ -->
+
+                <div class="col-md-3">
+
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="checkbox"
+                               name="application_ids" value="{{ app.id }}"
+                               id="select{{ app.id }}" form="bulkEmailForm">
+                        <label class="form-check-label small"
+                               for="select{{ app.id }}">
+                            Select for email
+                        </label>
+                    </div>
+
+                    <h5 class="mb-1">
+                        {{ app.profile.full_name|default:app.student.username }}
+                    </h5>
+
+                    <p class="text-muted small mb-1">
+                        {{ app.student.username }}<br>
+                        {{ app.student.email|default:"No email on file" }}
+                    </p>
+
+                    {% if app.recommended %}
+
+                        <span class="badge bg-success mb-1">
+                            Recommended candidate
+                        </span>
+
+                    {% endif %}
+
+                    {% if not app.has_resume %}
+
+                        <span class="badge bg-secondary">
+                            No resume text
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- ============ AI MATCH ============ -->
+
+                <div class="col-md-4">
+
+                    <div class="d-flex align-items-center mb-1">
+
+                        <strong class="me-2">Resume Match</strong>
+
+                        {% if app.has_requirements %}
+
+                            <span class="badge fs-6
+                                {% if app.match_percentage >= 70 %}bg-success
+                                {% elif app.match_percentage >= 40 %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %}">
+
+                                {{ app.match_percentage }}%
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-secondary">N/A</span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="progress mb-2" style="height: 6px;">
+
+                        <div class="progress-bar
+                            {% if app.match_percentage >= 70 %}bg-success
+                            {% elif app.match_percentage >= 40 %}bg-warning
+                            {% else %}bg-danger{% endif %}"
+                            role="progressbar"
+                            style="width: {{ app.match_percentage }}%;"></div>
+
+                    </div>
+
+                    <div class="small mb-1">
+
+                        <strong class="text-success">Matched:</strong>
+
+                        {% for s in app.matched_skills %}
+
+                            <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                                {{ s }}
+                            </span>
+
+                        {% empty %}
+
+                            <span class="text-muted">none</span>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="small mb-2">
+
+                        <strong class="text-danger">Missing:</strong>
+
+                        {% for s in app.missing_skills %}
+
+                            <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                                {{ s }}
+                            </span>
+
+                        {% empty %}
+
+                            <span class="text-muted">none</span>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="small mb-1">
+
+                        <strong>Quiz Score:</strong>
+
+                        {% if app.quiz_attempted %}
+
+                            <span class="badge bg-dark">
+                                {{ app.quiz_score }}/{{ app.quiz_total }}
+                            </span>
+
+                            <span class="text-muted">
+                                (needs {{ job.min_score_required }})
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-secondary">
+                                Not Attempted
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="small">
+
+                        <strong>Overall Match:</strong>
+
+                        <span class="badge
+                            {% if app.overall_match_percentage >= 70 %}bg-success
+                            {% elif app.overall_match_percentage >= 40 %}bg-warning text-dark
+                            {% else %}bg-danger{% endif %}">
+                            {{ app.overall_match_percentage }}%
+                        </span>
+
+                        {% if not app.quiz_attempted %}
+
+                            <span class="text-muted">(resume only)</span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <a href="/recruiter/applicant/{{ app.id }}/analysis/"
+                       class="btn btn-sm btn-outline-primary mt-2">
+                        Full AI analysis
+                    </a>
+
+                </div>
+
+
+                <!-- ============ STATUS ============ -->
+
+                <div class="col-md-3">
+
+                    <strong class="d-block mb-1">Status</strong>
+
+                    <span class="badge {{ app.badge_class }} mb-2">
+                        {{ app.status }}
+                    </span>
+
+                    {% if app.interview_date %}
+
+                        <p class="small text-muted mb-2">
+                            Interview: {{ app.interview_date }}
+                            {{ app.interview_time }}
+                        </p>
+
+                    {% endif %}
+
+                    <form method="POST"
+                          action="/recruiter/applicant/{{ app.id }}/status/">
+
+                        {% csrf_token %}
+
+                        <div class="input-group input-group-sm">
+
+                            <select name="status" class="form-select">
+
+                                {% for status in status_choices %}
+
+                                    <option value="{{ status }}"
+                                        {% if status == app.status %}selected{% endif %}>
+                                        {{ status }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                            <button type="submit" class="btn btn-dark">
+                                Update
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+                <!-- ============ ACTIONS ============ -->
+
+                <div class="col-md-2 text-end">
+
+                    {% if app.profile.resume %}
+
+                        <a href="{{ app.profile.resume.url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="btn btn-outline-primary btn-sm mb-2 w-100">
+                            View Resume
+                        </a>
+
+                    {% endif %}
+
+                    <a href="/schedule-interview/{{ app.id }}/"
+                       class="btn btn-warning btn-sm mb-2 w-100">
+                        Schedule Interview
+                    </a>
+
+                    <form method="POST" action="/select/{{ app.id }}/"
+                          class="mb-2">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="btn btn-success btn-sm w-100">
+                            Select
+                        </button>
+
+                    </form>
+
+                    <form method="POST" action="/reject/{{ app.id }}/">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="btn btn-danger btn-sm w-100">
+                            Reject
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+{% empty %}
+
+    <div class="alert alert-warning">
+        No applicants yet.
+    </div>
+
+{% endfor %}
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selectAll = document.getElementById('selectAllApplicants');
+    if (!selectAll) return;
+    const boxes = Array.from(document.querySelectorAll(
+        'input[name="application_ids"][form="bulkEmailForm"]'
+    ));
+    selectAll.addEventListener('change', function () {
+        boxes.forEach(function (box) { box.checked = selectAll.checked; });
+    });
+    boxes.forEach(function (box) {
+        box.addEventListener('change', function () {
+            selectAll.checked = boxes.length > 0 &&
+                boxes.every(function (item) { return item.checked; });
+        });
+    });
+});
+</script>
+\n{% endblock %}

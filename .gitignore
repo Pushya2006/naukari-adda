@@ -1,0 +1,112 @@
+# =========================================================================
+# Secrets - never commit these
+# =========================================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+credentials.json
+
+
+# =========================================================================
+# Python
+# =========================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib60/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+
+# =========================================================================
+# Virtual environments
+# =========================================================================
+venv/
+env/
+ENV/
+.venv/
+env.bak/
+venv.bak/
+
+
+# =========================================================================
+# Django
+# =========================================================================
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+/static_root/
+
+# Uploaded resumes contain personal data - keep them out of the repo.
+media/
+!media/.gitkeep
+
+
+# =========================================================================
+# Testing / coverage
+# =========================================================================
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+
+# =========================================================================
+# Node
+# =========================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+
+# =========================================================================
+# IDE / editor
+# =========================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+
+# =========================================================================
+# OS
+# =========================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini

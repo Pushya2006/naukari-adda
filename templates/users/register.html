@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-6">
+
+        <div class="card shadow-lg">
+
+            <div class="card-body p-5">
+
+                <h2 class="text-center mb-4">
+
+                    Create Account
+
+                </h2>
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+                    {{ form.as_p }}
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-100 mt-3">
+
+                        Register
+
+                    </button>
+
+                </form>
+
+                <p class="text-center mt-4">
+
+                    Already have an account?
+
+                    <a href="/login/">
+
+                        Login
+
+                    </a>
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

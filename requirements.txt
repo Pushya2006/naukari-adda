@@ -1,0 +1,57 @@
+# =========================================================================
+# Naukari Adda - Python dependencies
+#
+#   pip install -r requirements.txt
+#
+# Every package listed here is actually imported by the project.
+# =========================================================================
+
+# --- Core framework ------------------------------------------------------
+Django>=5.2,<7.0
+
+# --- Configuration -------------------------------------------------------
+# Loads the .env file in settings.py so no secret lives in source code.
+python-dotenv>=1.0.0
+
+# --- Resume text extraction ----------------------------------------------
+# Primary PDF text extraction (users/resume_utils.py).
+pdfplumber>=0.11.0
+
+# Secondary PDF extraction, used when pdfplumber returns nothing.
+PyPDF2>=3.0.1
+
+# --- OCR for scanned / image resumes -------------------------------------
+# Renders PDF pages to images. REQUIRES the Poppler system binaries.
+pdf2image>=1.17.0
+
+# Python wrapper around Tesseract. REQUIRES the Tesseract system binary.
+pytesseract>=0.3.10
+
+# Image handling for both OCR paths.
+Pillow>=10.0.0
+
+# --- Claude AI resume analysis (optional at runtime) ---------------------
+# The site falls back to rule-based matching if this is absent or if no
+# ANTHROPIC_API_KEY is configured, so it is safe to omit in a minimal
+# install - but it is required for the Claude-powered analysis.
+anthropic>=0.40.0
+
+
+# =========================================================================
+# SYSTEM PACKAGES (not installable via pip)
+#
+# OCR needs two external binaries. Skip these and the project still runs -
+# only OCR of scanned resumes is unavailable, and it degrades gracefully.
+#
+#   Tesseract OCR
+#     Windows : https://github.com/UB-Mannheim/tesseract/wiki
+#               then set TESSERACT_CMD in .env
+#     macOS   : brew install tesseract
+#     Ubuntu  : sudo apt install tesseract-ocr
+#
+#   Poppler (provides pdftoppm, used by pdf2image)
+#     Windows : https://github.com/oschwartz10612/poppler-windows/releases
+#               then set POPPLER_PATH in .env
+#     macOS   : brew install poppler
+#     Ubuntu  : sudo apt install poppler-utils
+# =========================================================================
