@@ -1,8 +1,3 @@
-"""
-Single entry point for in-app notifications and best-effort email delivery.
-Email failures never prevent the in-app notification or other recipients from
-being processed.
-"""
 
 import logging
 
@@ -18,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 def user_display_name(user):
-    """Return the student's preferred name, falling back safely."""
     profile = StudentProfile.objects.filter(user=user).only(
         'full_name').first()
     full_name = (getattr(profile, 'full_name', '') or '').strip()
@@ -32,22 +26,16 @@ def user_display_name(user):
 
 
 def personalize_body(user, body):
-    """Support {name}; otherwise add a friendly greeting."""
     name = user_display_name(user)
     body = (body or '').strip()
     if '{name}' in body:
         return body.replace('{name}', name)
     if body.lower().startswith(('hello ', 'hi ', 'dear ')):
         return body
-    return f'Hello {name},\\n\\n{body}'
+    return f'Hello {name},\n\n{body}'
 
 
 def notify_result(user, message, email_subject=None, email_body=None):
-    """
-    Create the in-app notification, then attempt one individual email.
-
-    Returns one of: 'sent', 'no_email', 'failed', or 'not_requested'.
-    """
     Notification.objects.create(user=user, message=message)
 
     if not email_subject:
@@ -55,27 +43,23 @@ def notify_result(user, message, email_subject=None, email_body=None):
 
     recipient = (getattr(user, 'email', '') or '').strip()
     if not recipient:
-        logger.info('No email address on file for %s - in-app only.',
-                    getattr(user, 'username', user))
         return 'no_email'
 
     try:
         validate_email(recipient)
     except ValidationError:
-        logger.info('Invalid email address on file for %s.',
-                    getattr(user, 'username', user))
         return 'no_email'
 
     from_email = (getattr(settings, 'DEFAULT_FROM_EMAIL', None)
                   or getattr(settings, 'EMAIL_HOST_USER', None))
     if not from_email:
-        logger.warning('DEFAULT_FROM_EMAIL is not configured - skipping email.')
+        logger.warning('DEFAULT_FROM_EMAIL is not configured.')
         return 'failed'
 
     try:
         sent_count = send_mail(
-            subject=(email_subject or '').replace('\\r', ' ').replace(
-                '\\n', ' ')[:200],
+            subject=(email_subject or '').replace('\r', ' ').replace(
+                '\n', ' ')[:200],
             message=personalize_body(user, email_body or message),
             from_email=from_email,
             recipient_list=[recipient],
@@ -85,15 +69,13 @@ def notify_result(user, message, email_subject=None, email_body=None):
             return 'sent'
         logger.warning('Email backend did not send a message to %s.', recipient)
         return 'failed'
-    except Exception:  # noqa: BLE001
-        # Do not leak SMTP credentials or backend details to the recruiter.
+    except Exception:
         logger.exception('Email delivery failed for user %s.',
                          getattr(user, 'username', user))
         return 'failed'
 
 
 def notify(user, message, email_subject=None, email_body=None):
-    """Backward-compatible boolean wrapper used by existing application code."""
     return notify_result(
         user, message, email_subject=email_subject,
         email_body=email_body) == 'sent'

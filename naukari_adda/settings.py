@@ -155,13 +155,17 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = env_bool('EMAIL_USE_TLS', True)
 EMAIL_USE_SSL = env_bool('EMAIL_USE_SSL', False)
 EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '15'))
+BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL') or EMAIL_HOST_USER \
     or 'no-reply@naukariadda.local'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 _configured_backend = os.environ.get('EMAIL_BACKEND')
-if _configured_backend:
+
+if not DEBUG and BREVO_API_KEY:
+    EMAIL_BACKEND = 'jobs.email_backend.BrevoEmailBackend'
+elif _configured_backend:
     EMAIL_BACKEND = _configured_backend
 elif EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
