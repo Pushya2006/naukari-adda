@@ -54,4 +54,6 @@ anthropic>=0.40.0
 #               then set POPPLER_PATH in .env
 #     macOS   : brew install poppler
 #     Ubuntu  : sudo apt install poppler-utils
+gunicorn
+whitenoise
 # =========================================================================
